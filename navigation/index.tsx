@@ -3,6 +3,7 @@ import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
+  useNavigation,
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
@@ -18,6 +19,7 @@ import { Feather } from "@expo/vector-icons";
 
 import HomeScreen from "../screens/HomeScreen";
 import { RootStackParamList } from "../types";
+import UserScreen from "../screens/UsersScreen";
 
 export default function Navigation({
   colorScheme,
@@ -51,12 +53,22 @@ function RootNavigator() {
         }}
         component={ChatRoomScreen}
       />
+      <Stack.Screen
+        name="Users"
+        options={{
+          headerTitle: "Users",
+          headerBackTitleVisible: false,
+        }}
+        component={UserScreen}
+      />
     </Stack.Navigator>
   );
 }
 
 const HomeHeader = (props) => {
   const { width } = useWindowDimensions();
+
+  const navigation = useNavigation();
 
   return (
     <View
@@ -91,6 +103,9 @@ const HomeHeader = (props) => {
         style={{ marginHorizontal: 5 }}
       />
       <Feather
+        onPress={() => {
+          navigation.navigate("Users");
+        }}
         name="edit-2"
         size={24}
         color="black"

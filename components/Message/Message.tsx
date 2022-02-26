@@ -1,10 +1,30 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-
-const myID = "u1";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { Users } from "../../src/models";
+import { Auth, DataStore } from "aws-amplify";
 
 const Message = ({ message }) => {
-  const isMe = message.user.id == myID;
+  const [user, setUser] = useState<Users | undefined>();
+  const [isMe, setIsMe] = useState<boolean>(false);
+
+  useEffect(() => {
+    DataStore.query(Users, message.userID).then(setUser);
+  }, []);
+
+  useEffect(() => {
+    const checkIfMe = async () => {
+      if (!user) {
+        return;
+      }
+      const authUser = await Auth.currentAuthenticatedUser();
+      setIsMe(user.id === authUser.attributes.sub);
+    };
+    checkIfMe();
+  }, [user]);
+
+  if (!user) {
+    return <ActivityIndicator />;
+  }
   return (
     <View
       style={[
@@ -12,9 +32,7 @@ const Message = ({ message }) => {
         isMe ? styles.rigthContainer : styles.LeftContainer,
       ]}
     >
-      <Text style={{ color: isMe ? "black" : "white" }}>
-        {message.content}{" "}
-      </Text>
+      <Text style={{ color: isMe ? "black" : "white" }}>{message.content}</Text>
     </View>
   );
 };

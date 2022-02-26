@@ -14,15 +14,34 @@ import {
   AntDesign,
   Ionicons,
 } from "@expo/vector-icons";
+import { DataStore } from "aws-amplify";
+import { ChatRoom, Message } from "../../src/models";
+import { Auth } from "aws-amplify";
 
-const MessageInput = () => {
+const MessageInput = ({ chatRoom }) => {
   const [message, setMessage] = useState("");
 
-  const sendMessage = () => {
-    // send message
-    console.warn("sending: ", message);
+  const sendMessage = async () => {
+    const user = await Auth.currentAuthenticatedUser();
+    const newMessage = await DataStore.save(
+      new Message({
+        content: message,
+        userID: user.attributes.sub,
+        chatroomID: chatRoom.id,
+      })
+    );
+
+    updateLastMessage(newMessage);
 
     setMessage("");
+  };
+
+  const updateLastMessage = async (newMessage) => {
+    DataStore.save(
+      ChatRoom.copyOf(chatRoom, (updatedChatRoom) => {
+        updatedChatRoom.lastMessage = newMessage;
+      })
+    );
   };
 
   const onPlusClicked = () => {
